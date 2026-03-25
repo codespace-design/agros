@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - AGROS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 class="mb-4">{{ title }}</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{% url 'user-list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

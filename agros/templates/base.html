@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AGROS - Estate Management{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4">
+                <img src="/static/images/agros_logo.png?v=hex_bg" alt="AGROS Logo" class="img-fluid mb-2" style="max-height: 50px;">
+                <h4 class="mb-0 fw-bold">AGROS</h4>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                {% if request.user.role == 'ADMIN' or request.user.is_superuser %}
+                <a href="{% url 'estate-list' %}" class="list-group-item list-group-item-action {% if 'estate' in request.path %}active{% endif %}">
+                    <i class="fas fa-leaf me-2"></i> Estates
+                </a>
+                {% endif %}
+                
+                {% if request.user.role in 'ADMIN,MANAGER' or request.user.is_superuser %}
+                <a href="{% url 'plot-list' %}" class="list-group-item list-group-item-action {% if 'plot' in request.path %}active{% endif %}">
+                    <i class="fas fa-th-large me-2"></i> Plots
+                </a>
+                
+                <a href="#activitiesSubmenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action {% if 'activit' in request.path or 'categories' in request.path %}active{% endif %}">
+                    <i class="fas fa-tasks me-2"></i> Activities
+                </a>
+                <div class="collapse {% if 'activit' in request.path or 'categories' in request.path %}show{% endif %}" id="activitiesSubmenu">
+                    <a href="{% url 'activity-list' %}" class="list-group-item list-group-item-action ps-4 {% if 'activity' in request.path and 'categories' not in request.path %}active{% endif %}">
+                        <i class="fas fa-clipboard-list me-2"></i> Logs & Tasks
+                    </a>
+                    <a href="{% url 'category-list' %}" class="list-group-item list-group-item-action ps-4 {% if 'category' in request.path %}active{% endif %}">
+                        <i class="fas fa-tags me-2"></i> Categories
+                    </a>
+                </div>
+                {% endif %}
+                {% if request.user.role in 'ADMIN,MANAGER' or request.user.is_superuser %}
+                <a href="#laborSubmenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action {% if 'labor' in request.path or 'payroll' in request.path %}active{% endif %}">
+                    <i class="fas fa-users me-2"></i> Labor Workforce
+                </a>
+                <div class="collapse {% if 'labor' in request.path or 'payroll' in request.path %}show{% endif %}" id="laborSubmenu">
+                    <a href="{% url 'labor-list' %}" class="list-group-item list-group-item-action ps-4 {% if 'labor' in request.path and 'attendance' not in request.path and 'payroll' not in request.path %}active{% endif %}">
+                        <i class="fas fa-user-friends me-2"></i> Roster
+                    </a>
+                    <a href="{% url 'attendance-list' %}" class="list-group-item list-group-item-action ps-4 {% if 'attendance' in request.path %}active{% endif %}">
+                        <i class="fas fa-clipboard-check me-2"></i> Attendance
+                    </a>
+                    <a href="{% url 'payroll-summary' %}" class="list-group-item list-group-item-action ps-4 {% if 'payroll' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Payroll
+                    </a>
+                </div>
+                
+                <a href="{% url 'production-list' %}" class="list-group-item list-group-item-action {% if 'production' in request.path %}active{% endif %}">
+                    <i class="fas fa-box-open me-2"></i> Production
+                </a>
+                
+                <a href="{% url 'report-list' %}" class="list-group-item list-group-item-action {% if 'report' in request.path %}active{% endif %}">
+                    <i class="fas fa-chart-line me-2"></i> Reports
+                </a>
+                {% endif %}
+                {% if request.user.role == 'ADMIN' or request.user.is_superuser %}
+                <a href="{% url 'user-list' %}" class="list-group-item list-group-item-action {% if 'user' in request.path %}active{% endif %}">
+                    <i class="fas fa-user-shield me-2"></i> User Management
+                </a>
+                <a href="{% url 'settings-manage' %}" class="list-group-item list-group-item-action {% if 'settings' in request.path %}active{% endif %}">
+                    <i class="fas fa-cogs me-2"></i> System Settings
+                </a>
+                <a href="{% url 'manager-payroll-summary' %}" class="list-group-item list-group-item-action {% if 'manager-payroll' in request.path %}active{% endif %}">
+                    <i class="fas fa-money-check-alt me-2"></i> Manager Payroll
+                </a>
+                <a href="{% url 'activity-log' %}" class="list-group-item list-group-item-action {% if 'audit-log' in request.path %}active{% endif %}">
+                    <i class="fas fa-history me-2"></i> Audit Log
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'profile' %}" class="list-group-item list-group-item-action mt-auto border-top">
+                    <i class="fas fa-user-cog me-2"></i> My Profile
+                </a>
+                
+                <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
+                <div class="container-fluid">
+                    <button class="btn btn-primary d-lg-none" id="menu-toggle">Toggle Menu</button>
+                    <div class="ms-auto">
+                        <span class="navbar-text">
+                            Logged in as: <strong>{{ user.username }}</strong> ({{ user.get_role_display }})
+                        </span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-success text-white border-0">
+            <h5 class="modal-title fw-bold" id="logoutModalLabel"><i class="fas fa-sign-out-alt me-2"></i> Sign Off Warning</h5>
+          </div>
+          <div class="modal-body text-center py-4">
+            <h4 class="mb-3">Do you want to sign off?</h4>
+            <p class="text-muted mb-4">You will be securely logged out of the AGROS system.</p>
+            
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'logout' %}" class="btn btn-success px-4 rounded-pill fw-bold">Yes, Sign Off</a>
+                <button type="button" class="btn btn-light px-4 rounded-pill border fw-bold" data-bs-dismiss="modal">No, Cancel</button>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top text-muted small">
+                Auto-signing off in <span id="logoutTimer" class="fw-bold text-success">10</span> seconds...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Logout Timer Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let logoutCountdown;
+            let timeLeft = 10;
+            const logoutModalEl = document.getElementById('logoutModal');
+            const timerDisplay = document.getElementById('logoutTimer');
+            const logoutUrl = "{% url 'logout' %}";
+            
+            if (logoutModalEl) {
+                logoutModalEl.addEventListener('show.bs.modal', function () {
+                    // Reset timer to 10 each time the modal opens
+                    timeLeft = 10;
+                    timerDisplay.textContent = timeLeft;
+                    
+                    // Start the countdown interval
+                    logoutCountdown = setInterval(function() {
+                        timeLeft--;
+                        timerDisplay.textContent = timeLeft;
+                        
+                        // If it hits zero, redirect to the Django logout URL
+                        if (timeLeft <= 0) {
+                            clearInterval(logoutCountdown);
+                            window.location.href = logoutUrl;
+                        }
+                    }, 1000);
+                });
+                
+                logoutModalEl.addEventListener('hide.bs.modal', function () {
+                    // Stop the timer if the user clicks No/Cancel
+                    if (logoutCountdown) {
+                        clearInterval(logoutCountdown);
+                    }
+                });
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

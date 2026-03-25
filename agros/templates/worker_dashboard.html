@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Labor Dashboard - AGROS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h4 class="card-title mb-0">Welcome, {{ request.user.username }}</h4>
+                {% if not worker_profile %}
+                <p class="mt-2 text-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Your account has not yet been linked to an active Labor profile by your Estate Manager. You will not see your assignments until this is completed.</p>
+                {% else %}
+                <p class="mt-2 mb-0"><i class="fas fa-id-badge"></i> Labor ID: {{ worker_profile.id }} | <b>{{ worker_profile.name }}</b></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Tasks Section -->
+    <div class="col-md-7 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-tasks text-primary me-2"></i> My Recent Tasks</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Plot</th>
+                                <th>Activity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in my_tasks %}
+                            <tr>
+                                <td>{{ task.task_date }}</td>
+                                <td>{{ task.plot.plot_name }}</td>
+                                <td>{{ task.activity.category.category_name }}</td>
+                                <td>
+                                    {% if task.status == 'COMPLETED' %}
+                                        <div class="d-flex flex-column">
+                                            <span class="badge bg-success mb-1">Completed</span>
+                                            <small class="text-muted" style="font-size: 0.7rem;">{{ task.completed_at|date:"M d, g:i a" }}</small>
+                                        </div>
+                                    {% elif task.status == 'IN_PROGRESS' %}
+                                        <span class="badge bg-primary">In Progress</span>
+                                    {% elif task.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">No tasks assigned recently.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Section -->
+    <div class="col-md-5 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-check text-success me-2"></i> My Attendance</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in my_attendance %}
+                            <tr>
+                                <td class="ps-3">{{ record.date }}</td>
+                                <td>
+                                    {% if record.status == 'PRESENT' %}
+                                        <span class="badge bg-success">Present</span>
+                                    {% elif record.status == 'ABSENT' %}
+                                        <span class="badge bg-danger">Absent</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Half Day</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center py-4 text-muted">No attendance logs found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

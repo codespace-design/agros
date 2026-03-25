@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Labor - AGROS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Labor Management</h2>
+    <a href="{% url 'labor-create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Labor</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Linked Account</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for labor in labors %}
+                <tr>
+                    <td>{{ labor.name }}</td>
+                    <td>
+                        {% if labor.user %}
+                            <span class="badge bg-light text-dark shadow-sm border">
+                                <i class="fas fa-user-circle me-1"></i> {{ labor.user.username }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted small"><em>Not linked</em></span>
+                        {% endif %}
+                    </td>
+                    <td>{{ labor.phone }}</td>
+                    <td>{{ labor.address }}</td>
+                    <td>
+                        <a href="{% url 'labor-update' labor.pk %}" class="btn btn-sm btn-info text-white"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'labor-delete' labor.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center">No labor records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

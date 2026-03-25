@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROS - Cardamom Estate Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="landing-hero">
+        <div class="landing-overlay"></div>
+        
+        <!-- Background Content -->
+        <div id="main-content" class="landing-content">
+            <h1 class="app-title">AGROS</h1>
+            <p class="app-subtitle">Cardamom Estate Management</p>
+            <div class="d-flex justify-content-center gap-3">
+                <button class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill" onclick="toggleAuth('login')">LOGIN</button>
+                <button class="btn btn-light btn-lg px-5 py-3 rounded-pill" onclick="toggleAuth('signup')">SIGN UP</button>
+            </div>
+        </div>
+
+        <!-- Login Container -->
+        <div id="login-container" class="auth-container">
+            <div class="auth-card">
+                <h3 class="text-center mb-4">LOGIN</h3>
+                
+                {% if login_error %}
+                <div class="alert alert-danger py-2 small text-center mb-3">
+                    <i class="fas fa-exclamation-circle me-1"></i> {{ login_error }}
+                </div>
+                {% endif %}
+                
+                <form action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" name="username" class="form-control" placeholder="Username" value="{{ re_username|default:'' }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">LOGIN</button>
+                </form>
+                <p class="text-center mb-0 small text-white-50">Don't have an account? <a href="#" onclick="toggleAuth('signup')" class="text-white">Sign up</a></p>
+                <button class="back-btn" onclick="hideAuth()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Signup Container -->
+        <div id="signup-container" class="auth-container">
+            <div class="auth-card">
+                <h3 class="text-center mb-4">JOIN AGROS</h3>
+                <form action="{% url 'signup' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+                    </div>
+                    <div class="mb-3">
+                        <select name="role" class="form-control form-select" required>
+                            <option value="" disabled selected>Select Role</option>
+                            <option value="MANAGER">Estate Manager</option>
+                            <option value="WORKER">Labor</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" name="password1" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="mb-4">
+                        <input type="password" name="password2" class="form-control" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">CREATE ACCOUNT</button>
+                </form>
+                <p class="text-center mb-0 small text-white-50">Already have an account? <a href="#" onclick="toggleAuth('login')" class="text-white">Login</a></p>
+                <button class="back-btn" onclick="hideAuth()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleAuth(type) {
+            const main = document.getElementById('main-content');
+            const login = document.getElementById('login-container');
+            const signup = document.getElementById('signup-container');
+
+            main.classList.add('blur');
+            
+            if (type === 'login') {
+                signup.classList.remove('show');
+                login.classList.add('show');
+            } else {
+                login.classList.remove('show');
+                signup.classList.add('show');
+            }
+        }
+
+        function hideAuth() {
+            const main = document.getElementById('main-content');
+            const login = document.getElementById('login-container');
+            const signup = document.getElementById('signup-container');
+
+            main.classList.remove('blur');
+            login.classList.remove('show');
+            signup.classList.remove('show');
+        }
+        
+        // Auto-open login if there was an error
+        {% if show_login %}
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleAuth('login');
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

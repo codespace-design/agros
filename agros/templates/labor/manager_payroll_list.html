@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Payroll - AGROS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manager Payroll Disbursement</h2>
+    <a href="{% url 'record-manager-payment' %}" class="btn btn-primary shadow-sm border-0">
+        <i class="fas fa-money-bill-wave me-2"></i> Record Manager Payment
+    </a>
+</div>
+
+<div class="card bg-info bg-opacity-10 shadow-sm border-0 mb-4">
+    <div class="card-body py-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-user-tie fa-2x text-info me-3"></i>
+            <div>
+                <h5 class="mb-1 text-dark fw-bold">Admin Level Oversight</h5>
+                <p class="mb-0 text-muted">This specialized view allows System Administrators to record open-ended financial compensation and salary distributions to Estate Managers.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Manager Name</th>
+                        <th>Email Address</th>
+                        <th>Total Logged Compensation</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in payroll_data %}
+                    <tr>
+                        <td class="fw-bold">{{ item.manager.get_full_name|default:item.manager.username }}</td>
+                        <td>{{ item.manager.email|default:"N/A" }}</td>
+                        <td class="fw-bold text-success">₹{{ item.total_paid }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'record-manager-payment' %}?manager={{ item.manager.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                Issue Payment
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">No Manager profiles exist in the system.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

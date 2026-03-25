@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - AGROS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-file-invoice-dollar text-primary me-2"></i> {{ title }}</h2>
+            <p class="text-muted">Monitor worker earnings and manage payouts from a single dashboard.</p>
+        </div>
+        <div>
+            <a href="{% url 'payroll-export-csv' %}" class="btn btn-outline-success me-2">
+                <i class="fas fa-file-excel"></i> Export CSV
+            </a>
+            <a href="{% url 'payroll-export-pdf' %}" class="btn btn-outline-danger me-2">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
+            <a href="{% url 'record-payment' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Record Payout
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Labor Name</th>
+                        <th class="text-end">Total Earned (Wages)</th>
+                        <th class="text-end">Total Paid</th>
+                        <th class="text-end">Balance Due</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in payroll_data %}
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="fas fa-user-circle text-muted me-2"></i> {{ item.labor.name }}
+                        </td>
+                        <td class="text-end text-success fw-bold">₹{{ item.total_earned }}</td>
+                        <td class="text-end text-info">₹{{ item.total_paid }}</td>
+                        <td class="text-end fw-bold {% if item.balance_due > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            ₹{{ item.balance_due }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'record-payment' %}?worker={{ item.labor.id }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-hand-holding-usd me-1"></i> Pay Now
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No payroll data available yet. Complete tasks to see earnings.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card border-none bg-light p-3">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-white p-3 me-3">
+                    <i class="fas fa-info-circle text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1 fw-bold">Calculation Policy</h6>
+                    <small class="text-muted">Wages are only calculated for tasks verified and marked as <b>Completed</b> by a Manager.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

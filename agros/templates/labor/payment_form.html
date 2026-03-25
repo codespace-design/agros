@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - AGROS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center gap-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0"><i class="fas fa-money-bill-wave text-success me-2"></i> {{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        {% if is_manager_form %}
+                            <label class="form-label fw-bold">Select Manager</label>
+                            {% render_field form.manager class="form-select" %}
+                            {% if form.manager.errors %}<div class="text-danger small">{{ form.manager.errors }}</div>{% endif %}
+                        {% else %}
+                            <label class="form-label fw-bold">Select Labor</label>
+                            {% render_field form.worker class="form-select" %}
+                            {% if form.worker.errors %}<div class="text-danger small">{{ form.worker.errors }}</div>{% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Amount (₹)</label>
+                        {% render_field form.amount class="form-control" placeholder="0.00" %}
+                        {% if form.amount.errors %}<div class="text-danger small">{{ form.amount.errors }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Date of Payment</label>
+                        {% render_field form.date class="form-control" %}
+                        {% if form.date.errors %}<div class="text-danger small">{{ form.date.errors }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notes / Reference</label>
+                        {% render_field form.notes class="form-control" placeholder="E.g. Advance payment, Weekly settlement..." %}
+                        {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'payroll-summary' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="fas fa-check-circle me-1"></i> Confirm Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    {% if not is_manager_form %}
+    <div class="col-md-4">
+        <div class="card shadow-sm text-dark sticky-top" style="top: 2rem; display: none;" id="payment-slip-card">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i> Payment Slip</h5>
+            </div>
+            <div class="card-body bg-white">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Earned:</span>
+                    <span class="fw-bold fs-5 text-dark" id="slip-total-earned">₹0.00</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Paid:</span>
+                    <span class="fw-bold fs-5 text-success" id="slip-total-paid">₹0.00</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="fw-bold text-dark">Remaining Due:</span>
+                    <span class="fw-bold fs-4 text-danger" id="slip-balance-due">₹0.00</span>
+                </div>
+                
+                <div class="alert alert-info py-2 mb-0 mt-3 border-0 bg-light">
+                    <i class="fas fa-calendar-alt me-1 text-primary"></i> <span class="text-muted">Payment Date:</span>
+                    <div class="fw-bold text-dark mt-1" id="slip-selected-date">Not selected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not is_manager_form %}
+{{ payroll_data|json_script:"payroll-data" }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const workerSelect = document.getElementById('id_worker');
+        const dateInput = document.getElementById('id_date');
+        const amountInput = document.getElementById('id_amount');
+        
+        const slipCard = document.getElementById('payment-slip-card');
+        const slipEarned = document.getElementById('slip-total-earned');
+        const slipPaid = document.getElementById('slip-total-paid');
+        const slipDue = document.getElementById('slip-balance-due');
+        const slipDate = document.getElementById('slip-selected-date');
+        
+        const payrollDataElement = document.getElementById('payroll-data');
+        if (!payrollDataElement) return;
+        
+        const payrollData = JSON.parse(payrollDataElement.textContent);
+        
+        function updateSlip() {
+            const workerId = workerSelect.value;
+            if (!workerId) {
+                slipCard.style.display = 'none';
+                return;
+            }
+            
+            const data = payrollData[workerId];
+            if (data) {
+                slipCard.style.display = 'block';
+                
+                slipEarned.textContent = `₹${data.total_earned.toFixed(2)}`;
+                slipPaid.textContent = `₹${data.total_paid.toFixed(2)}`;
+                
+                let currentAmount = parseFloat(amountInput.value) || 0;
+                let newDue = data.balance_due - currentAmount;
+                
+                if (newDue < 0) {
+                    slipDue.className = "fw-bold fs-4 text-danger";
+                    slipDue.innerHTML = `₹${newDue.toFixed(2)} <span class='fs-6 fw-normal text-muted d-block'>Overpaying</span>`;
+                } else {
+                    slipDue.className = "fw-bold fs-4 text-primary";
+                    slipDue.textContent = `₹${newDue.toFixed(2)}`;
+                }
+                
+                if (dateInput.value) {
+                    slipDate.textContent = new Date(dateInput.value).toLocaleDateString();
+                } else {
+                    slipDate.textContent = 'Not selected';
+                }
+            }
+        }
+        
+        workerSelect.addEventListener('change', updateSlip);
+        amountInput.addEventListener('input', updateSlip);
+        dateInput.addEventListener('change', updateSlip);
+        
+        // Initial call
+        updateSlip();
+    });
+</script>
+{% endif %}
+{% endblock %}

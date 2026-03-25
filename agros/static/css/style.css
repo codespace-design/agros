@@ -1,0 +1,258 @@
+:root {
+    --primary-color: #1a4d2e;
+    --secondary-color: #4f6f52;
+    --accent-color: #e8dfca;
+    --bg-color: #f5f5f5;
+    --text-color: #333;
+    --sidebar-width: 250px;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+#wrapper {
+    display: flex;
+    width: 100%;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: var(--sidebar-width);
+    background: var(--primary-color);
+    color: white;
+    transition: all 0.3s;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 2rem 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#sidebar-wrapper .list-group-item {
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background: var(--secondary-color);
+    color: white;
+    border-left: 4px solid var(--accent-color);
+}
+
+#page-content-wrapper {
+    width: 100%;
+    padding: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Landing Page Styles */
+.landing-hero {
+    height: 100vh;
+    background: url('/static/images/landing_bg.png?v=2') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.landing-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    transition: all 0.5s ease;
+}
+
+.landing-content.blur {
+    filter: blur(10px);
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.app-title {
+    font-size: 5rem;
+    font-weight: 800;
+    letter-spacing: 5px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.app-subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.auth-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 3;
+    width: 100%;
+    max-width: 400px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.auth-container.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    color: #111;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-card h3 {
+    font-weight: 800;
+    color: #000;
+    letter-spacing: -0.5px;
+    margin-bottom: 2rem;
+    background: linear-gradient(45deg, #000, #444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-card .form-control {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1a202c;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-card .form-control::placeholder {
+    color: #94a3b8;
+}
+
+.auth-card .form-control:focus {
+    background: #fff;
+    border-color: #000;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+    transform: scale(1.02);
+}
+
+.auth-card .btn-primary {
+    background: #000;
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    padding: 1rem;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.auth-card .btn-primary:hover {
+    background: #222;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card .text-white-50 {
+    color: #64748b !important;
+}
+
+.auth-card a.text-white {
+    color: #000 !important;
+    font-weight: 700;
+    text-decoration: none;
+    position: relative;
+}
+
+.auth-card a.text-white::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #000;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    transform-origin: right;
+}
+
+.auth-card a.text-white:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.auth-card .back-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    color: #64748b;
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.auth-card .back-btn:hover {
+    background: #000;
+    color: #fff;
+    transform: rotate(90deg) scale(1.1);
+}

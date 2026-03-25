@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Dashboard - AGROS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title opacity-75"><i class="fas fa-tasks me-2"></i> Activities Logs</h6>
+                <p class="card-text h2 mb-0 fw-bold">{{ stats.activities_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title opacity-75"><i class="fas fa-users me-2"></i> Labor Roster</h6>
+                <p class="card-text h2 mb-0 fw-bold">{{ stats.labor_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title opacity-75"><i class="fas fa-exclamation-circle me-2"></i> Pending Tasks</h6>
+                <p class="card-text h2 mb-0 fw-bold">{{ stats.tasks_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title opacity-75"><i class="fas fa-wallet me-2"></i> Payroll Due</h6>
+                <p class="card-text h2 mb-0 fw-bold">₹{{ stats.total_due|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Activities</h5>
+                <a href="{% url 'activity-create' %}" class="btn btn-sm btn-outline-success">Log Activity</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Plot</th>
+                            <th>Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in recent_activities %}
+                        <tr>
+                            <td>{{ activity.activity_date }}</td>
+                            <td>{{ activity.plot.plot_name }}</td>
+                            <td>{{ activity.category.category_name }}</td>
+                            <td>
+                                <span class="badge bg-success">Logged</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No recent activities</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Latest Production</h5>
+                <a href="{% url 'production-create' %}" class="btn btn-sm btn-outline-primary">Log Yield</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Plot</th>
+                            <th>Qty (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in latest_production %}
+                        <tr>
+                            <td>{{ record.harvest_date }}</td>
+                            <td>{{ record.plot.plot_name }}</td>
+                            <td>{{ record.quantity }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center">No recent harvest records</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-clipboard-check me-2"></i> Tasks Requiring Verification</h5>
+                <a href="{% url 'task-list' %}" class="btn btn-sm btn-link text-decoration-none">View All Assignments <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Worker</th>
+                                <th>Activity</th>
+                                <th>Plot</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in recent_tasks %}
+                            <tr>
+                                <td class="fw-bold">{{ task.worker.name }}</td>
+                                <td>{{ task.activity.category.category_name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ task.plot.plot_name }}</span></td>
+                                <td>
+                                    {% if task.status == 'COMPLETED' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif task.status == 'IN_PROGRESS' %}
+                                        <span class="badge bg-info text-white">In Progress</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if task.status != 'COMPLETED' %}
+                                    <form method="post" action="{% url 'complete-task' task.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                            <i class="fas fa-check me-1"></i> Verify & Complete
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                        <small class="text-muted"><i class="fas fa-check-double text-success me-1"></i> Verified</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No pending tasks found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

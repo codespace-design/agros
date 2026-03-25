@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}My Profile - AGROS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Info Form -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Update Profile Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_profile" value="1">
+                    
+                    {% for field in p_form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% render_field field class="form-control" %}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Form -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_password" value="1">
+                    
+                    {% for field in c_form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% render_field field class="form-control" %}
+                        {% if field.help_text %}
+                            <div class="form-text small text-muted">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-warning w-100">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

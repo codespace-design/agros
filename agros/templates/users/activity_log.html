@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}System Activity Log - AGROS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-history me-2 text-primary"></i> System Audit Trail</h2>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">Back to Command Center</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-0">
+        <p class="text-muted mb-0 small">This log tracks all significant internal database changes and administrative actions for security and operational audit.</p>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Object Type</th>
+                        <th>Identifier</th>
+                        <th>Change Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="small">{{ log.action_time|date:"M d, H:i:s" }}</td>
+                        <td>
+                            <div class="fw-bold small">{{ log.user.username }}</div>
+                        </td>
+                        <td>
+                            {% if log.is_addition %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2">CREATED</span>
+                            {% elif log.is_change %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2">MODIFIED</span>
+                            {% elif log.is_deletion %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2">DELETED</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted uppercase fw-bold">{{ log.content_type.name|upper }}</small></td>
+                        <td><code>{{ log.object_repr }}</code></td>
+                        <td class="small text-wrap" style="max-width: 300px;">
+                            {{ log.change_message|default:"No description provided." }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">No audit logs found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

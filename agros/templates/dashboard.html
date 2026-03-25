@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Command Center - AGROS{% endblock %}
+
+{% block content %}
+<!-- Admin Dashboard Header Cards -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card bg-success text-white shadow-sm border-0 h-100">
+            <div class="card-body py-3">
+                <h6 class="card-title opacity-75 small uppercase fw-bold mb-2">Estates</h6>
+                <p class="card-text h3 mb-0 fw-bold">{{ stats.estates_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white shadow-sm border-0 h-100">
+            <div class="card-body py-3">
+                <h6 class="card-title opacity-75 small uppercase fw-bold mb-2">Plots</h6>
+                <p class="card-text h3 mb-0 fw-bold">{{ stats.plots_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-dark shadow-sm border-0 h-100">
+            <div class="card-body py-3">
+                <h6 class="card-title opacity-75 small uppercase fw-bold mb-2">Workforce</h6>
+                <p class="card-text h3 mb-0 fw-bold">{{ stats.labor_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow-sm border-0 h-100">
+            <div class="card-body py-3">
+                <h6 class="card-title opacity-75 small uppercase fw-bold mb-2">Global Payroll Due</h6>
+                <p class="card-text h3 mb-0 fw-bold">₹{{ stats.global_due|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm border-0 h-100">
+            <div class="card-body py-3">
+                <h6 class="card-title opacity-75 small uppercase fw-bold mb-2">Pending Approvals</h6>
+                <p class="card-text h3 mb-0 fw-bold">{{ stats.pending_approval_count|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Approvals & Activities -->
+    <div class="col-lg-7">
+        <!-- Verification Queue -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-user-shield me-2 text-dark"></i> Verification Queue</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in pending_users %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ u.username }}</div>
+                                    <small class="text-muted">{{ u.email }}</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ u.get_role_display }}</span></td>
+                                <td><small>{{ u.date_joined|date:"M d, Y" }}</small></td>
+                                <td class="text-end">
+                                    <form method="post" action="{% url 'user-approve' u.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Approve</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted small">No pending registrations.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Access Logs -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-sign-in-alt me-2"></i> Access Logs</h5>
+                <a href="{% url 'activity-log' %}" class="btn btn-sm btn-link text-decoration-none small">View Full Audit</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Event</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in access_logs %}
+                            <tr>
+                                <td class="small">{{ log.action_time|date:"M d, H:i" }}</td>
+                                <td class="fw-bold">{{ log.user.username }}</td>
+                                <td>
+                                    {% if 'In' in log.change_message %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">{{ log.change_message }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ log.change_message }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center py-4 text-muted small">No recent access events.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Pulse -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-chart-line me-2"></i> System Activity Pulse</h5>
+                <a href="{% url 'activity-list' %}" class="btn btn-sm btn-link text-decoration-none small">View Full Tasks</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Worker</th>
+                                <th>Activity</th>
+                                <th>Status</th>
+                                <th>Earnings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in recent_tasks %}
+                            <tr>
+                                <td class="fw-bold">{{ task.worker.name }}</td>
+                                <td>{{ task.activity.category.category_name }}</td>
+                                <td>
+                                    {% if task.status == 'COMPLETED' %}
+                                        <span class="badge bg-success">Verified</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">{{ task.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">₹{{ task.wage }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">No recent operations logged.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Production & Estate Health -->
+    <div class="col-lg-5">
+        <!-- Production Analytics -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-box-open me-2"></i> Production Analytics</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for record in latest_production %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <div class="fw-bold">{{ record.plot.plot_name }}</div>
+                            <small class="text-muted">{{ record.harvest_date|date:"M d, Y" }}</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ record.quantity }} kg</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4 text-muted">No harvest data available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer bg-light border-0 py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Global Yield</span>
+                    <span class="h5 mb-0 fw-bold text-primary">{{ stats.total_production|default:0 }} kg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Modals/Links -->
+        <div class="card bg-white text-dark shadow-sm border p-4">
+            <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-cogs me-2"></i>System Controls</h5>
+            <div class="d-grid gap-2">
+                <a href="{% url 'report-export-csv' %}" class="btn btn-dark text-white fw-bold"><i class="fas fa-file-csv me-2"></i> Export Global CSV Report</a>
+                <a href="{% url 'report-export-pdf' %}" class="btn btn-outline-dark"><i class="fas fa-file-pdf me-2"></i> Download System PDF</a>
+                <hr class="my-2 opacity-25">
+                <a href="{% url 'user-list' %}" class="btn btn-sm btn-link text-dark text-decoration-none text-center">Open Full User Management <i class="fas fa-external-link-alt ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
