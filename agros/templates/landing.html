@@ -131,12 +131,13 @@
             signup.classList.remove('show');
         }
         
-        // Auto-open login if there was an error
-        {% if show_login %}
-        document.addEventListener("DOMContentLoaded", function() {
+        // Auto-open login/signup if requested
+        // Auto-open login/signup if requested
+        if ("{{ show_login }}" === "True") {
             toggleAuth('login');
-        });
-        {% endif %}
+        } else if ("{{ show_signup }}" === "True") {
+            toggleAuth('signup');
+        }
     </script>
 </body>
 </html>

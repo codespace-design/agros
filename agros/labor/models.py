@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 class Labor(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='worker_profile')
@@ -21,7 +22,7 @@ class Attendance(models.Model):
     ]
     
     worker = models.ForeignKey(Labor, on_delete=models.CASCADE, related_name='attendance_records')
-    date = models.DateField()
+    date = models.DateField(default=timezone.localdate)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PRESENT')
     
     class Meta:
@@ -35,7 +36,7 @@ class Payment(models.Model):
     worker = models.ForeignKey(Labor, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='manager_payments', null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField()
+    date = models.DateField(default=timezone.localdate)
     notes = models.TextField(blank=True)
 
     def __str__(self):

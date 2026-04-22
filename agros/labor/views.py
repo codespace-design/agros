@@ -2,6 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION
+from django.db.models import Sum
+from decimal import Decimal
+from users.models import User, SystemSetting
 from agros.utils import log_action
 from .models import Labor, Attendance
 from .forms import LaborForm, AttendanceForm
@@ -115,21 +118,22 @@ def attendance_create(request):
 @login_required
 @user_passes_test(is_manager_or_admin)
 def payroll_summary(request):
-    from django.db.models import Sum
-    from activities.models import TaskAssignment
-    
     labors = Labor.objects.all()
     payroll_data = []
     
+    base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+    base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
+    
     for labor in labors:
-        # Calculate total earned from completed tasks
-        total_earned = TaskAssignment.objects.filter(
+        # Calculate total earned from attendance (Present days * BASE_WAGE)
+        present_days = Attendance.objects.filter(
             worker=labor, 
-            status='COMPLETED'
-        ).aggregate(total=Sum('wage'))['total'] or 0
+            status='PRESENT'
+        ).count()
+        total_earned = Decimal(present_days) * base_wage
         
         # Calculate total paid from Payment records
-        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or 0
+        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         
         balance_due = total_earned - total_paid
         
@@ -150,20 +154,21 @@ def payroll_summary(request):
 def record_payment(request):
     from .forms import PaymentForm
     from django.contrib.admin.models import ADDITION
-    from agros.utils import log_action
-    from django.db.models import Sum
-    from activities.models import TaskAssignment
     
     # Generate payroll summary for the slip
     payroll_data = {}
+    base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+    base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
+    
     for labor in Labor.objects.all():
-        total_earned = float(TaskAssignment.objects.filter(worker=labor, status='COMPLETED').aggregate(total=Sum('wage'))['total'] or 0)
-        total_paid = float(labor.payments.aggregate(total=Sum('amount'))['total'] or 0)
+        present_days = Attendance.objects.filter(worker=labor, status='PRESENT').count()
+        total_earned = Decimal(present_days) * base_wage
+        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         balance_due = total_earned - total_paid
         payroll_data[labor.id] = {
-            'total_earned': total_earned,
-            'total_paid': total_paid,
-            'balance_due': balance_due
+            'total_earned': float(total_earned),
+            'total_paid': float(total_paid),
+            'balance_due': float(balance_due)
         }
         
     if request.method == "POST":
@@ -338,11 +343,12 @@ def export_attendance_pdf(request):
 def export_payroll_csv(request):
     import csv
     from django.http import HttpResponse
-    from django.db.models import Sum
-    from activities.models import TaskAssignment
     
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="Agros_Labor_Payroll_Report.csv"'
+    
+    base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+    base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
     
     writer = csv.writer(response)
     writer.writerow(['AGROS - Global Labor Payroll Report'])
@@ -350,8 +356,9 @@ def export_payroll_csv(request):
     writer.writerow(['Worker Name', 'Total Earned', 'Total Paid', 'Balance Due'])
     
     for labor in Labor.objects.all():
-        total_earned = TaskAssignment.objects.filter(worker=labor, status='COMPLETED').aggregate(total=Sum('wage'))['total'] or 0
-        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or 0
+        present_days = Attendance.objects.filter(worker=labor, status='PRESENT').count()
+        total_earned = Decimal(present_days) * base_wage
+        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         balance_due = total_earned - total_paid
         writer.writerow([labor.name, f"Rs.{total_earned}", f"Rs.{total_paid}", f"Rs.{balance_due}"])
         
@@ -419,10 +426,13 @@ def export_payroll_pdf(request):
     ])
     
     data = [['Worker Name', 'Total Earned', 'Total Paid', 'Balance Due']]
+    base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+    base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
     
     for labor in Labor.objects.all()[:500]: # Safety limit
-        total_earned = float(TaskAssignment.objects.filter(worker=labor, status='COMPLETED').aggregate(total=Sum('wage'))['total'] or 0)
-        total_paid = float(labor.payments.aggregate(total=Sum('amount'))['total'] or 0)
+        present_days = Attendance.objects.filter(worker=labor, status='PRESENT').count()
+        total_earned = Decimal(present_days) * base_wage
+        total_paid = labor.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         balance_due = total_earned - total_paid
         
         data.append([

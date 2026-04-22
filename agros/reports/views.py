@@ -39,7 +39,7 @@ def report_list(request):
         productions = productions.filter(harvest_date=filter_date)
         activities = activities.filter(activity_date=filter_date)
         
-    production_summary = productions.values('plot__plot_name').annotate(total_qty=Sum('quantity'))
+    production_summary = productions.values('plot__id', 'plot__plot_name', 'plot__estate__estate_name').annotate(total_qty=Sum('quantity'))
     
     context = {
         'production_summary': production_summary,

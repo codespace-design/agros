@@ -1,6 +1,7 @@
 from django.db import models
 from plots.models import Plot
 from labor.models import Labor
+from django.utils import timezone
 
 class ActivityCategory(models.Model):
     category_name = models.CharField(max_length=100)
@@ -15,7 +16,7 @@ class ActivityCategory(models.Model):
 class Activity(models.Model):
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='activities')
     category = models.ForeignKey(ActivityCategory, on_delete=models.CASCADE)
-    activity_date = models.DateField()
+    activity_date = models.DateField(default=timezone.localdate)
     description = models.TextField()
 
     class Meta:
@@ -35,7 +36,7 @@ class TaskAssignment(models.Model):
     worker = models.ForeignKey(Labor, on_delete=models.CASCADE, related_name='assignments')
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    task_date = models.DateField()
+    task_date = models.DateField(default=timezone.localdate)
     wage = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     completed_at = models.DateTimeField(null=True, blank=True)

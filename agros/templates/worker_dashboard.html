@@ -40,7 +40,7 @@
                             {% for task in my_tasks %}
                             <tr>
                                 <td>{{ task.task_date }}</td>
-                                <td>{{ task.plot.plot_name }}</td>
+                                <td>{{ task.plot }}</td>
                                 <td>{{ task.activity.category.category_name }}</td>
                                 <td>
                                     {% if task.status == 'COMPLETED' %}

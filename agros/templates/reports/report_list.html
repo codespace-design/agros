@@ -34,7 +34,7 @@
                 <select name="plot" class="form-select">
                     <option value="">All Plots</option>
                     {% for plot in plots %}
-                    <option value="{{ plot.id }}" {% if selected_plot == plot.id|stringformat:"s" %}selected{% endif %}>{{ plot.plot_name }}</option>
+                    <option value="{{ plot.id }}" {% if selected_plot == plot.id|stringformat:"s" %}selected{% endif %}>{{ plot }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -61,6 +61,7 @@
                     <thead>
                         <tr>
                             <th>Plot Name</th>
+                            <th>Estate</th>
                             <th>Total Quantity (kg)</th>
                         </tr>
                     </thead>
@@ -68,6 +69,7 @@
                         {% for item in production_summary %}
                         <tr>
                             <td>{{ item.plot__plot_name }}</td>
+                            <td>{{ item.plot__estate__estate_name }}</td>
                             <td>{{ item.total_qty }}</td>
                         </tr>
                         {% empty %}

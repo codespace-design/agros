@@ -123,9 +123,9 @@ def signup(request):
                     friendly_name = field.replace('password1', 'Password').replace('password2', 'Confirm Password').title()
                     if field == '__all__': friendly_name = 'Error'
                     messages.error(request, f"{friendly_name}: {error}")
-            return redirect('landing')
+            return render(request, 'landing.html', {'show_signup': True})
             
-    return redirect('landing')
+    return redirect('/?auth=signup')
 
 def custom_login(request):
     if request.user.is_authenticated:
@@ -164,7 +164,7 @@ def custom_login(request):
                     're_username': u_name
                 })
                 
-    return render(request, 'landing.html')
+    return render(request, 'landing.html', {'show_login': True})
 
 def logout_view(request):
     if request.user.is_authenticated and request.user.role in ['MANAGER', 'WORKER']:

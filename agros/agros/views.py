@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from users.models import User
+from decimal import Decimal
+from users.models import User, SystemSetting
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.admin.models import CHANGE
@@ -7,16 +8,23 @@ from agros.utils import log_action
 from django.db.models import Sum
 from estates.models import Estate
 from plots.models import Plot
-from labor.models import Labor
+from labor.models import Labor, Attendance, Payment
 from activities.models import Activity, TaskAssignment
 from production.models import Production
-from labor.models import Payment
 from django.utils import timezone
 
 def landing(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'landing.html')
+    
+    context = {}
+    auth_type = request.GET.get('auth')
+    if auth_type == 'login':
+        context['show_login'] = True
+    elif auth_type == 'signup':
+        context['show_signup'] = True
+        
+    return render(request, 'landing.html', context)
 
 @login_required
 def dashboard(request):
@@ -43,7 +51,11 @@ def dashboard(request):
         latest_production = Production.objects.select_related('plot').order_by('-harvest_date')[:5]
         recent_tasks = TaskAssignment.objects.select_related('worker', 'activity__category').exclude(status='COMPLETED').order_by('-task_date')[:5]
         
-        total_earned = TaskAssignment.objects.filter(status='COMPLETED').aggregate(total=Sum('wage'))['total'] or 0
+        # Financial Overview
+        base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+        base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
+        
+        total_earned = Attendance.objects.filter(status='PRESENT').count() * base_wage
         total_paid = Payment.objects.filter(worker__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
         total_due = total_earned - total_paid
 
@@ -63,7 +75,10 @@ def dashboard(request):
     # Admin Dashboard
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         # Financial Overview
-        total_earned = TaskAssignment.objects.filter(status='COMPLETED').aggregate(total=Sum('wage'))['total'] or 0
+        base_wage_setting = SystemSetting.objects.filter(key='BASE_WAGE').first()
+        base_wage = Decimal(base_wage_setting.value) if base_wage_setting else Decimal('650.00')
+        
+        total_earned = Attendance.objects.filter(status='PRESENT').count() * base_wage
         total_paid = Payment.objects.filter(worker__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
         global_due = total_earned - total_paid
 

@@ -58,7 +58,7 @@
                         {% for activity in recent_activities %}
                         <tr>
                             <td>{{ activity.activity_date }}</td>
-                            <td>{{ activity.plot.plot_name }}</td>
+                            <td>{{ activity.plot }}</td>
                             <td>{{ activity.category.category_name }}</td>
                             <td>
                                 <span class="badge bg-success">Logged</span>
@@ -91,7 +91,7 @@
                         {% for record in latest_production %}
                         <tr>
                             <td>{{ record.harvest_date }}</td>
-                            <td>{{ record.plot.plot_name }}</td>
+                            <td>{{ record.plot }}</td>
                             <td>{{ record.quantity }}</td>
                         </tr>
                         {% empty %}
@@ -128,7 +128,7 @@
                             <tr>
                                 <td class="fw-bold">{{ task.worker.name }}</td>
                                 <td>{{ task.activity.category.category_name }}</td>
-                                <td><span class="badge bg-light text-dark border">{{ task.plot.plot_name }}</span></td>
+                                <td><span class="badge bg-light text-dark border">{{ task.plot }}</span></td>
                                 <td>
                                     {% if task.status == 'COMPLETED' %}
                                         <span class="badge bg-success">Completed</span>
