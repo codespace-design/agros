@@ -26,12 +26,8 @@ echo ">>> Installing System Dependencies..."
 apt update && apt upgrade -y
 apt install -y python3-pip python3-venv python3-dev default-libmysqlclient-dev build-essential pkg-config nginx mysql-server
 
-# 2. Database Configuration
-echo ">>> Configuring MySQL Database..."
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS agros CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -e "CREATE USER IF NOT EXISTS 'agros'@'localhost' IDENTIFIED BY 'agrospassword';"
-mysql -u root -e "GRANT ALL PRIVILEGES ON agros.* TO 'agros'@'localhost';"
-mysql -u root -e "FLUSH PRIVILEGES;"
+# 2. Database Configuration (Skipped - User will configure manually)
+echo ">>> Skipping Database Configuration..."
 
 # 3. Python Environment Setup
 echo ">>> Setting up Python Virtual Environment..."
@@ -53,9 +49,7 @@ SETTINGS_FILE="$PROJECT_DIR/agros/settings.py"
 # Update ALLOWED_HOSTS
 sed -i "s/ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \['*', '$DOMAIN_OR_IP'\]/g" "$SETTINGS_FILE"
 
-# Update Database Credentials safely
-sed -i "s/\"USER\": \"root\"/\"USER\": \"agros\"/g" "$SETTINGS_FILE"
-sed -i "s/\"PASSWORD\": \"root\"/\"PASSWORD\": \"agrospassword\"/g" "$SETTINGS_FILE"
+
 
 # 5. Execute Django Core Operations
 echo ">>> Running Migrations and Collecting Static Files..."
@@ -92,7 +86,7 @@ systemctl enable gunicorn
 echo ">>> Configuring Nginx..."
 cat > /etc/nginx/sites-available/agros << EOF
 server {
-    listen 80;
+    listen 8000;
     server_name $DOMAIN_OR_IP;
 
     location = /favicon.ico { access_log off; log_not_found off; }
@@ -118,6 +112,6 @@ systemctl restart nginx
 
 echo "==========================================="
 echo " Deployment Complete!"
-echo " You can now access AGROS at: http://$DOMAIN_OR_IP"
+echo " You can now access AGROS at: http://$DOMAIN_OR_IP:8000"
 echo " (Note: It may take a minute for DNS/IP propagation)"
 echo "==========================================="
